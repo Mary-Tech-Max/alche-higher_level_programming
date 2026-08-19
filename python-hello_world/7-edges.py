@@ -1,4 +1,4 @@
-#!/usr/bin/pyhton3
+#!/usr/bin/python3
 word = "Holberton School"
 word_first_3 = word[:3]
 word_last_2 = word[-2:]
