@@ -5,4 +5,3 @@
 class Rectangle:
     """Represent an empty rectangle."""
     pass
-```
