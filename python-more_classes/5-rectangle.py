@@ -1,4 +1,3 @@
-```python
 #!/usr/bin/python3
 """Defines a Rectangle class."""
 
@@ -7,6 +6,7 @@ class Rectangle:
     """Defines a rectangle."""
 
     def __init__(self, width=0, height=0):
+        """Initialize a Rectangle."""
         self.width = width
         self.height = height
 
@@ -49,7 +49,7 @@ class Rectangle:
         return 2 * (self.__width + self.__height)
 
     def __str__(self):
-        """Return the rectangle as a string."""
+        """Return the rectangle using #."""
         if self.__width == 0 or self.__height == 0:
             return ""
 
@@ -59,7 +59,9 @@ class Rectangle:
 
     def __repr__(self):
         """Return a string representation of the rectangle."""
-        return "Rectangle({}, {})".format(self.__width, self.__height)
+        return "Rectangle({}, {})".format(
+            self.__width, self.__height
+        )
 
     def __del__(self):
         """Print a message when the rectangle is deleted."""

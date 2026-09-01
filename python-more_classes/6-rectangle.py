@@ -1,5 +1,5 @@
-```python
 #!/usr/bin/python3
+```python
 """Defines a Rectangle class."""
 
 
@@ -9,6 +9,7 @@ class Rectangle:
     number_of_instances = 0
 
     def __init__(self, width=0, height=0):
+        """Initialize a new Rectangle."""
         self.width = width
         self.height = height
         Rectangle.number_of_instances += 1
@@ -52,7 +53,7 @@ class Rectangle:
         return 2 * (self.__width + self.__height)
 
     def __str__(self):
-        """Return the rectangle as a string."""
+        """Return the rectangle using the # character."""
         if self.__width == 0 or self.__height == 0:
             return ""
 
