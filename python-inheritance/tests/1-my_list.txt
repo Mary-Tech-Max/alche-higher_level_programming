@@ -1,0 +1,47 @@
+==================== Test MyList ====================
+
+Import the class:
+
+    >>> MyList = __import__('1-my_list').MyList
+
+Create an empty list:
+
+    >>> my_list = MyList()
+    >>> print(my_list)
+    []
+
+Add some integers:
+
+    >>> my_list.append(1)
+    >>> my_list.append(4)
+    >>> my_list.append(2)
+    >>> my_list.append(3)
+    >>> my_list.append(5)
+    >>> print(my_list)
+    [1, 4, 2, 3, 5]
+
+Print the sorted list:
+
+    >>> my_list.print_sorted()
+    [1, 2, 3, 4, 5]
+
+Make sure the original list was not changed:
+
+    >>> print(my_list)
+    [1, 4, 2, 3, 5]
+
+Test an already sorted list:
+
+    >>> sorted_list = MyList([1, 2, 3])
+    >>> sorted_list.print_sorted()
+    [1, 2, 3]
+    >>> print(sorted_list)
+    [1, 2, 3]
+
+Test a list with negative integers:
+
+    >>> numbers = MyList([5, -2, 8, 0, -7])
+    >>> numbers.print_sorted()
+    [-7, -2, 0, 5, 8]
+    >>> print(numbers)
+    [5, -2, 8, 0, -7]
