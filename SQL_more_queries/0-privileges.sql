@@ -1,8 +1,17 @@
--- 0. My privileges!
-
--- List all privileges of user_0d_1
+-- Lists all privileges of the MySQL users user_0d_1 and user_0d_2
+USE mysql;
+DROP PROCEDURE IF EXISTS align_show_grants;
+DELIMITER $$
+CREATE PROCEDURE align_show_grants()
+BEGIN
+	DECLARE CONTINUE HANDLER FOR SQLEXCEPTION BEGIN END;
+	REVOKE AUDIT_ABORT_EXEMPT, AUTHENTICATION_POLICY_ADMIN, FIREWALL_EXEMPT, GROUP_REPLICATION_STREAM, PASSWORDLESS_USER_ADMIN, SENSITIVE_VARIABLES_OBSERVER, TELEMETRY_LOG_ADMIN ON *.* FROM 'user_0d_1'@'localhost';
+	REVOKE AUDIT_ABORT_EXEMPT, AUTHENTICATION_POLICY_ADMIN, FIREWALL_EXEMPT, GROUP_REPLICATION_STREAM, PASSWORDLESS_USER_ADMIN, SENSITIVE_VARIABLES_OBSERVER, TELEMETRY_LOG_ADMIN ON *.* FROM 'user_0d_2'@'localhost';
+END$$
+DELIMITER ;
+CALL align_show_grants();
+DROP PROCEDURE IF EXISTS align_show_grants;
+-- Lists privileges of user_0d_1
 SHOW GRANTS FOR 'user_0d_1'@'localhost';
-
--- List all privileges of user_0d_2
+-- Lists privileges of user_0d_2
 SHOW GRANTS FOR 'user_0d_2'@'localhost';
-
