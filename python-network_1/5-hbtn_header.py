@@ -1,10 +1,11 @@
 #!/usr/bin/python3
-"""Displays the X-Request-Id header value of a response from a URL."""
+"""Takes in a URL, sends a GET request to it using the requests package,
+and displays the value of the X-Request-Id variable found in the header
+of the response.
+"""
 import requests
 import sys
 
 if __name__ == "__main__":
     r = requests.get(sys.argv[1])
     print(r.headers.get("X-Request-Id"))
-EOF
-chmod u+x 5-hbtn_header.py
