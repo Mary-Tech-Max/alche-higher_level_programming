@@ -1,4 +1,3 @@
-
 #!/usr/bin/python3
 """Displays the X-Request-Id header value of a response from a URL."""
 import requests
@@ -7,3 +6,5 @@ import sys
 if __name__ == "__main__":
     r = requests.get(sys.argv[1])
     print(r.headers.get("X-Request-Id"))
+EOF
+chmod u+x 5-hbtn_header.py
