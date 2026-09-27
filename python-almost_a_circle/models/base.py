@@ -1,179 +1,120 @@
 #!/usr/bin/python3
-"""Unittest for the Base class."""
+"""Module that defines the Base class.
+
+This module defines Base, the base class for all other classes in
+this project. It manages the id attribute for every instance created
+from a class that inherits from it, and provides JSON
+serialization/deserialization helpers shared by all subclasses.
+"""
 import json
-import os
-import unittest
-from models.base import Base
-from models.rectangle import Rectangle
-from models.square import Square
 
 
-class TestBase(unittest.TestCase):
-    """Tests for Base.__init__ id management."""
+class Base:
+    """Base class that manages the id attribute of all future classes.
 
-    def test_id_auto_assigned_first(self):
-        """First auto-assigned id continues the shared counter."""
-        b1 = Base()
-        b2 = Base()
-        self.assertEqual(b2.id, b1.id + 1)
+    This class avoids duplicating the id-management logic (and by
+    extension, the same bugs) in every class that needs an id.
+    """
 
-    def test_id_explicit(self):
-        """An explicit id is used as-is."""
-        b = Base(98)
-        self.assertEqual(b.id, 98)
+    __nb_objects = 0
 
-    def test_id_none_increments_counter(self):
-        """Passing None still auto-generates an id."""
-        b1 = Base(None)
-        b2 = Base()
-        self.assertEqual(b2.id, b1.id + 1)
+    def __init__(self, id=None):
+        """Initialize a new Base instance.
 
-    def test_no_args(self):
-        """Base() with no arguments doesn't raise."""
+        Args:
+            id: the id to assign to this instance. If None, a new
+                unique id is generated automatically.
+        """
+        if id is not None:
+            self.id = id
+        else:
+            Base.__nb_objects += 1
+            self.id = Base.__nb_objects
+
+    @staticmethod
+    def to_json_string(list_dictionaries):
+        """Return the JSON string representation of a list of dicts.
+
+        Args:
+            list_dictionaries: a list of dictionaries.
+
+        Returns:
+            The JSON string representation of list_dictionaries, or
+            "[]" if list_dictionaries is None or empty.
+        """
+        if list_dictionaries is None or len(list_dictionaries) == 0:
+            return "[]"
+        return json.dumps(list_dictionaries)
+
+    @classmethod
+    def save_to_file(cls, list_objs):
+        """Write the JSON string representation of list_objs to a file.
+
+        The file is named <Class name>.json (for example
+        Rectangle.json) and is overwritten if it already exists.
+
+        Args:
+            list_objs: a list of instances that inherit from Base. If
+                None, an empty list is saved instead.
+        """
+        filename = "{}.json".format(cls.__name__)
+        if list_objs is None:
+            list_objs = []
+        list_dicts = [obj.to_dictionary() for obj in list_objs]
+        with open(filename, "w") as f:
+            f.write(cls.to_json_string(list_dicts))
+
+    @staticmethod
+    def from_json_string(json_string):
+        """Return the list represented by a JSON string.
+
+        Args:
+            json_string: a string representing a list of dictionaries.
+
+        Returns:
+            The list represented by json_string, or an empty list if
+            json_string is None or empty.
+        """
+        if json_string is None or len(json_string) == 0:
+            return []
+        return json.loads(json_string)
+
+    @classmethod
+    def create(cls, **dictionary):
+        """Return an instance of cls with all attributes already set.
+
+        A "dummy" instance is created with mandatory attributes set
+        to placeholder values, then updated with the real values from
+        dictionary.
+
+        Args:
+            dictionary: key/value pairs of attributes to set on the
+                new instance.
+
+        Returns:
+            A new instance of cls with its attributes set from
+            dictionary.
+        """
+        if cls.__name__ == "Rectangle":
+            dummy = cls(1, 1)
+        else:
+            dummy = cls(1)
+        dummy.update(**dictionary)
+        return dummy
+
+    @classmethod
+    def load_from_file(cls):
+        """Return a list of instances loaded from <Class name>.json.
+
+        Returns:
+            A list of instances of cls, built from the JSON file
+            <Class name>.json. If that file doesn't exist, an empty
+            list is returned.
+        """
+        filename = "{}.json".format(cls.__name__)
         try:
-            Base()
-        except Exception:
-            self.fail("Base() raised unexpectedly")
-
-
-class TestBaseToJSONString(unittest.TestCase):
-    """Tests for Base.to_json_string."""
-
-    def test_none(self):
-        """None returns the string '[]'."""
-        self.assertEqual(Base.to_json_string(None), "[]")
-
-    def test_empty_list(self):
-        """An empty list returns the string '[]'."""
-        self.assertEqual(Base.to_json_string([]), "[]")
-
-    def test_list_of_dicts(self):
-        """A list of dicts is converted to valid JSON."""
-        list_dicts = [{"id": 1}, {"id": 2}]
-        result = Base.to_json_string(list_dicts)
-        self.assertEqual(json.loads(result), list_dicts)
-
-    def test_return_type(self):
-        """to_json_string always returns a string."""
-        self.assertIsInstance(Base.to_json_string([{"a": 1}]), str)
-
-
-class TestBaseFromJSONString(unittest.TestCase):
-    """Tests for Base.from_json_string."""
-
-    def test_none(self):
-        """None returns an empty list."""
-        self.assertEqual(Base.from_json_string(None), [])
-
-    def test_empty_string(self):
-        """An empty string returns an empty list."""
-        self.assertEqual(Base.from_json_string(""), [])
-
-    def test_valid_json(self):
-        """A valid JSON string round-trips to the same list."""
-        list_dicts = [{"id": 1}, {"id": 2}]
-        json_string = json.dumps(list_dicts)
-        self.assertEqual(Base.from_json_string(json_string), list_dicts)
-
-    def test_round_trip_with_to_json_string(self):
-        """to_json_string and from_json_string are inverses."""
-        list_dicts = [{"id": 1, "width": 3}]
-        json_string = Base.to_json_string(list_dicts)
-        self.assertEqual(Base.from_json_string(json_string), list_dicts)
-
-
-class TestBaseSaveToFile(unittest.TestCase):
-    """Tests for Base.save_to_file."""
-
-    def tearDown(self):
-        """Remove any JSON files created by the tests."""
-        for filename in ("Rectangle.json", "Square.json"):
-            if os.path.exists(filename):
-                os.remove(filename)
-
-    def test_save_rectangles(self):
-        """save_to_file writes the correct JSON to Rectangle.json."""
-        r1 = Rectangle(10, 7, 2, 8, 1)
-        r2 = Rectangle(2, 4, id=2)
-        Rectangle.save_to_file([r1, r2])
-        with open("Rectangle.json", "r") as f:
-            content = json.loads(f.read())
-        self.assertEqual(content, [r1.to_dictionary(), r2.to_dictionary()])
-
-    def test_save_none(self):
-        """save_to_file(None) writes an empty list."""
-        Rectangle.save_to_file(None)
-        with open("Rectangle.json", "r") as f:
-            self.assertEqual(f.read(), "[]")
-
-    def test_save_overwrites_existing_file(self):
-        """save_to_file overwrites any existing file."""
-        Rectangle.save_to_file([Rectangle(1, 1, id=1)])
-        Rectangle.save_to_file([Rectangle(2, 2, id=2)])
-        with open("Rectangle.json", "r") as f:
-            content = json.loads(f.read())
-        self.assertEqual(len(content), 1)
-        self.assertEqual(content[0]["id"], 2)
-
-    def test_save_squares_filename(self):
-        """save_to_file uses <ClassName>.json as the filename."""
-        Square.save_to_file([Square(3, id=1)])
-        self.assertTrue(os.path.exists("Square.json"))
-
-
-class TestBaseCreate(unittest.TestCase):
-    """Tests for Base.create."""
-
-    def test_create_rectangle(self):
-        """create builds a Rectangle with the given attributes."""
-        r1 = Rectangle(3, 5, 1, id=99)
-        r2 = Rectangle.create(**r1.to_dictionary())
-        self.assertEqual(str(r1), str(r2))
-        self.assertIsNot(r1, r2)
-
-    def test_create_square(self):
-        """create builds a Square with the given attributes."""
-        s1 = Square(5, 1, 2, id=99)
-        s2 = Square.create(**s1.to_dictionary())
-        self.assertEqual(str(s1), str(s2))
-        self.assertIsNot(s1, s2)
-
-
-class TestBaseLoadFromFile(unittest.TestCase):
-    """Tests for Base.load_from_file."""
-
-    def tearDown(self):
-        """Remove any JSON files created by the tests."""
-        for filename in ("Rectangle.json", "Square.json"):
-            if os.path.exists(filename):
-                os.remove(filename)
-
-    def test_load_no_file_returns_empty_list(self):
-        """If the file doesn't exist, an empty list is returned."""
-        if os.path.exists("Rectangle.json"):
-            os.remove("Rectangle.json")
-        self.assertEqual(Rectangle.load_from_file(), [])
-
-    def test_save_then_load_rectangles(self):
-        """Loading after saving returns equivalent Rectangles."""
-        r1 = Rectangle(10, 7, 2, 8, 1)
-        r2 = Rectangle(2, 4, id=2)
-        Rectangle.save_to_file([r1, r2])
-        loaded = Rectangle.load_from_file()
-        self.assertEqual(len(loaded), 2)
-        self.assertEqual(str(loaded[0]), str(r1))
-        self.assertEqual(str(loaded[1]), str(r2))
-
-    def test_save_then_load_squares(self):
-        """Loading after saving returns equivalent Squares."""
-        s1 = Square(5, id=5)
-        s2 = Square(7, 9, 1, id=6)
-        Square.save_to_file([s1, s2])
-        loaded = Square.load_from_file()
-        self.assertEqual(len(loaded), 2)
-        self.assertEqual(str(loaded[0]), str(s1))
-        self.assertEqual(str(loaded[1]), str(s2))
-
-
-if __name__ == "__main__":
-    unittest.main()
+            with open(filename, "r") as f:
+                list_dicts = cls.from_json_string(f.read())
+        except IOError:
+            return []
+        return [cls.create(**d) for d in list_dicts]
