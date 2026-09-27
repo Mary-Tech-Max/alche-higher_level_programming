@@ -54,3 +54,9 @@ Passing None raises a TypeError::
     >>> print_square(None)
     Traceback (most recent call last):
     TypeError: size must be an integer
+
+Calling with no arguments raises a TypeError::
+
+    >>> print_square()
+    Traceback (most recent call last):
+    TypeError: print_square() missing 1 required positional argument: 'size'
